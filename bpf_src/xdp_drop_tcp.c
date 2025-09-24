@@ -26,6 +26,13 @@ struct {
   __uint(max_entries, 2);
 } pkt_count SEC(".maps");
 
+struct {
+  __uint(type, BPF_MAP_TYPE_ARRAY);
+  __type(key, __u32);
+  __type(value, __u16);
+  __uint(max_entries, 1);
+} config SEC(".maps");
+
 SEC("xdp")
 int drop_tcp_packet(struct xdp_md *ctx) {
   void *data_end = (void *)(long)ctx->data_end;
@@ -58,7 +65,9 @@ int drop_tcp_packet(struct xdp_md *ctx) {
     return XDP_PASS;
   }
 
-  __u16 drop_port = bpf_htons(4040);
+  __u32 config_key = 0;
+  __u16 *port_ptr = bpf_map_lookup_elem(&config, &config_key);
+  __u16 drop_port = port_ptr ? bpf_htons(*port_ptr) : bpf_htons(4040);
 
   __u32 total_key = 0;
   __u64 *total_count = bpf_map_lookup_elem(&pkt_count, &total_key);
