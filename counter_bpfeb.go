@@ -61,6 +61,7 @@ type counterProgramSpecs struct {
 //
 // It can be passed ebpf.CollectionSpec.Assign.
 type counterMapSpecs struct {
+	Config   *ebpf.MapSpec `ebpf:"config"`
 	PktCount *ebpf.MapSpec `ebpf:"pkt_count"`
 }
 
@@ -90,11 +91,13 @@ func (o *counterObjects) Close() error {
 //
 // It can be passed to loadCounterObjects or ebpf.CollectionSpec.LoadAndAssign.
 type counterMaps struct {
+	Config   *ebpf.Map `ebpf:"config"`
 	PktCount *ebpf.Map `ebpf:"pkt_count"`
 }
 
 func (m *counterMaps) Close() error {
 	return _CounterClose(
+		m.Config,
 		m.PktCount,
 	)
 }
